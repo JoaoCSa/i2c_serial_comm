@@ -1,8 +1,8 @@
 #include <Wire.h>
 
 int sens1 = A0, sens2 = A1, sens3 = A2, sens4 = A3, sens5 = A6, i=0, t=0;
-byte val1=0, val2=0, val3=0, val4=0, val5=0;
-char frase[12]; 
+uint16_t val1=0, val2=0, val3=0, val4=0, val5=0;
+char frase[40]; 
 
 void requestEvent(){
   Wire.write(frase[i]);
@@ -11,7 +11,7 @@ void requestEvent(){
   //Serial.print(" ");
   //Serial.print(i);
   //Serial.print(" ");
-  if (i==12){
+  if (frase[i] == '$'){
     i=0;
   } else {
     i++;  
@@ -26,15 +26,21 @@ void setup() {
 }
 
 void loop() {
+  /*
   val1 = analogRead(sens1);
   val2 = analogRead(sens2);
   val3 = analogRead(sens3);
   val4 = analogRead(sens4);
   val5 = analogRead(sens5); 
-  
- 
+  */
 
-  sprintf(frase, "#%02X%02X%02X%02X%02X$", val1, val2, val3, val4, val5);
+  val1 = 134;
+  val2 = 1024;
+  val3 = 1;
+  val4 = 0;
+  val5 = 56;
+  
+  sprintf(frase, "#%04X%04X%04X%04X%04X$", val1, val2, val3, val4, val5);
 
   Serial.print(" Frase: ");
   Serial.print(frase);
