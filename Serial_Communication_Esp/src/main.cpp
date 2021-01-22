@@ -1,23 +1,26 @@
 #include <Arduino.h>
 #include <HardwareSerial.h>
-int val=0;
 
+#define RXPIN 16
+#define TXPIN 17
 
+//HardwareSerial Serial2(2);
+
+char msg; //Initialized variable to store recieved data
 void setup() {
-  // put your setup code here, to run once:
+  // Begin the Serial at 9600 Baud
   Serial.begin(115200);
-  //pinMode(4, INPUT);
+  Serial2.begin(115200, SERIAL_8N1, RXPIN, TXPIN);
 }
 
 void loop() {
-  // put your main code here, to run repeatedly:
-   
-    // read the incoming byte:
-    val = Serial.read();
-    // say what you got:
-    Serial.println(val, DEC);
-  /*
-  val = digitalRead(4);
-  Serial.println(val);
-  */
+  if (Serial2.available()>0){
+    msg = Serial2.read();
+    Serial.print("Nano says: ");
+    Serial.print(msg);
+    Serial.println();
+  } else if (!Serial2.available()){
+    Serial.println("No messages :'(");
+  }
+
 }

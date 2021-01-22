@@ -26,20 +26,20 @@ void setup() {
 }
 
 void loop() {
-  
+  /*
   val1 = analogRead(sens1);
   val2 = analogRead(sens2);
   val3 = analogRead(sens3);
   val4 = analogRead(sens4);
   val5 = analogRead(sens5); 
-  
-  /*
+  */
+
   val1 = 134;
   val2 = 1024;
   val3 = 1;
   val4 = 0;
   val5 = 56;
-  */
+  
   
   sprintf(frase, "#%04X%04X%04X%04X%04X$", val1, val2, val3, val4, val5);
 
@@ -49,5 +49,4 @@ void loop() {
   //Serial.print(frase[0]);
   
   Serial.println();
-  delay(500);
 }

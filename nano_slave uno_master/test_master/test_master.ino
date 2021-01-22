@@ -289,5 +289,5 @@ void loop() {
   if(val[i][1] <= 'f' && val[i][1] >= 'a') output += val[i][1]-'a'+0xA;
   if(val[i][1] <= 'F' && val[i][1] >= 'A') output += val[i][1]-'A'+0xA;
   */
-  delay(500);
+
 }
