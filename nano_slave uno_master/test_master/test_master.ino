@@ -136,7 +136,7 @@ void loop() {
   Serial.println();
   */
   if (((nsens-2)/4)==8){ //NO CASO DE TER 8 SENSORES
-    sscanf(resposta_ver,"# %4x %4x %4x %4X %4x $", &val_1, &val_2, &val_3, &val_4, &val_5, &val_6, &val_7, &val_8);
+    sscanf(resposta_ver,"# %4x %4x %4x %4X %4x %4x %4x %4x $", &val_1, &val_2, &val_3, &val_4, &val_5, &val_6, &val_7, &val_8);
     Serial.println();
     Serial.print("val_1: ");
     Serial.print(val_1);
@@ -164,7 +164,7 @@ void loop() {
     Serial.print(val_8);
     Serial.println();
   }else if (((nsens-2)/4)==7){ //NO CASO DE TER 7 SENSORES
-    sscanf(resposta_ver,"# %4x %4x %4x %4X %4x $", &val_1, &val_2, &val_3, &val_4, &val_5, &val_6, &val_7);
+    sscanf(resposta_ver,"# %4x %4x %4x %4X %4x %4x %4x $", &val_1, &val_2, &val_3, &val_4, &val_5, &val_6, &val_7);
     Serial.println();
     Serial.print("val_1: ");
     Serial.print(val_1);
