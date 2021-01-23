@@ -93,7 +93,7 @@ void loop() {
     }
   }
   
-read_char = '(';
+  read_char = '(';
 
   Serial.print("Resposta guardada: ");
   Serial.println(resposta);
