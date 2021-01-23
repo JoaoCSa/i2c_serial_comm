@@ -15,12 +15,16 @@ void setup() {
 
 void loop() {
   if (Serial2.available()>0){
-    msg = Serial2.read();
-    Serial.print("Nano says: ");
-    Serial.print(msg);
-    Serial.println();
-  } else if (!Serial2.available()){
-    Serial.println("No messages :'(");
-  }
+    Serial.println("Serial available: ");
+    Serial.print(Serial2.available());
+    
+    while (Serial2.available()>0){
+      msg = Serial2.read();
+      Serial.println(msg);
 
+    }
+  } else if (!Serial2.available()){
+      Serial.print("No messages :'(");
+  }
+delay(500);
 }

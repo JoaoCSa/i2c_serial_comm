@@ -11,15 +11,11 @@ void setup()
 {
   Serial.begin(115200);
   mySerial.begin(115200);
+  pinMode(5, OUTPUT);
 } 
 
 void loop()
 {
-  if (mySerial.availableForWrite() != 0){
-    mySerial.write("Hello World!");
-    Serial.println("Message sent :)");
-  } else {
-    Serial.println("I don't have any friends :(");
-    mySerial.write("Hello World!");
-  } 
+    mySerial.write("Hello World!"); 
+delay(500);
 }
