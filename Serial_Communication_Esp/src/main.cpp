@@ -142,7 +142,7 @@ int decode_info(char * frase, unsigned int * val, int nsens, int frase_valida){ 
 
 }
 
-int read_serial_communication(){
+int read_serial_communication(char * resposta, int * frase_valida, int * nsens, int * ready_check){
     while(read_char != '$' && Serial2.available()>0){
       read_char = Serial2.read();
       if (read_char == '#'){
@@ -159,13 +159,13 @@ int read_serial_communication(){
             Serial.println(read_char);
             if ((j+1)%2 != 0){
               waiting_1st=1;  
-              nsens=0;
-              frase_valida=0;
+              *nsens=0;
+              *frase_valida=0;
               Serial.println("ERRO NA LEITURA DE SENSORES... VERIFICAR SE ESTÁ A SER ENVIADA A LEITURA NO FORMATO %4X"); 
             }
-            nsens=j+1;
+            *nsens=j+1;
             j=0;
-            frase_valida=1;
+            *frase_valida=1;
           } else {
             j++;
           }
@@ -173,11 +173,11 @@ int read_serial_communication(){
         Serial.println("WAITING FOR #..."); 
         waiting_1st=1;
         j=0;
-        nsens=0;
-        frase_valida=0;
+        *nsens=0;
+        *frase_valida=0;
         i++;
         if (i==5){
-          ready_check=0;
+          *ready_check=0;
           i=0;
         }
       }
@@ -185,12 +185,12 @@ int read_serial_communication(){
 
   read_char = '(';
 
-  if (ready_check==1 && frase_valida==1){
-    memcpy(resposta_ver, resposta, nsens);
+  if (*ready_check==1 && *frase_valida==1){
+    memcpy(resposta_ver, resposta, *nsens);
     return 1;
-  } else if (ready_check==1 && frase_valida==0){
+  } else if (*ready_check==1 && *frase_valida==0){
     return 0;
-  } else if (ready_check==0){
+  } else if (*ready_check==0){
     return -1;
   } else { 
     return 500;
@@ -205,7 +205,17 @@ void setup() {
 void loop() {
   if (ready_check == 1) {
     Serial.println("VERIFICADO");
-    comm_result = read_serial_communication();
+    comm_result = read_serial_communication(resposta, &frase_valida, &nsens, &ready_check);
+    /*
+    Serial.print("RESPOSTAAAAAAAAAAAAAAAAAAA:");
+    Serial.println(resposta);
+    Serial.print("VALIDADEEEEEEEEEEEEEEEEEEE:");
+    Serial.println(frase_valida);
+    Serial.print("NSEEEEEEEEEEEEEEEEEEEEEENS:");
+    Serial.println(nsens);
+    Serial.print("READYYYYYYYYYYYYYYYYYYYYYY:");
+    Serial.println(ready_check);
+    */
   } else {
     ready_check = initial_verification();
     if (ready_check == 1){
