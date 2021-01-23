@@ -9,14 +9,9 @@
 /*
 Varáveis usadas no código i2c
 */
-int num_bytes = 1, contagem = 0, ready_check=0, i=0, j=0, test=0, /*val_1=0, val_2=0, val_3=0, val_4=0, val_5=0,*/ waiting_1st=0, nsens=0, frase_valida=0;
-unsigned int val_1=0, val_2=0, val_3=0, val_4=0, val_5=0, val_6=0, val_7=0, val_8=0;
-char transf_char, check_char, resposta[40], read_char, resposta_ver[40]; 
-char val1[2]="", val2[2]="", val3[2]="", val4[2]="", val5[2]="";
-String val_dec;
-char output=0;
-
-char msg; //Initialized variable to store recieved data
+int ready_check=0, i=0, j=0, waiting_1st=0, nsens=0, frase_valida=0, comm_result=0;
+unsigned int val[9];
+char check_char, resposta[40], read_char, resposta_ver[40]; 
 
 int initial_verification(){
   while (check_char != '$' && Serial2.available()>0){
@@ -35,14 +30,119 @@ int initial_verification(){
   }
 }  
 
-void setup() {
-  Serial.begin(115200);
-  Serial2.begin(115200, SERIAL_8N1, RXPIN, TXPIN);
+int decode_info(char * frase, unsigned int * val, int nsens, int frase_valida){ //Dá return ao número de sensores lidos
+
+  Serial.print("FRASE QUE CHEGA A DECODE_INFO: ");
+  Serial.println(frase);
+ 
+  if (frase_valida == 1){
+    if (((nsens-2)/4)==8){ //NO CASO DE TER 8 SENSORES
+      sscanf(resposta_ver,"# %4x %4x %4x %4X %4x %4x %4x %4x $", &val[0], &val[1], &val[2], &val[3], &val[4], &val[5], &val[6], &val[7]);
+      Serial.print("val_1: ");
+      Serial.println(val[0]);
+      Serial.print("val_2: ");
+      Serial.println(val[1]);
+      Serial.print("val_3: ");
+      Serial.println(val[2]);
+      Serial.print("val_4: ");
+      Serial.println(val[3]);
+      Serial.print("val_5: ");
+      Serial.println(val[4]);
+      Serial.print("val_6: ");
+      Serial.println(val[5]);
+      Serial.print("val_7: ");
+      Serial.println(val[6]);
+      Serial.print("val_8: ");
+      Serial.println(val[7]);
+      return 8;
+    }else if (((nsens-2)/4)==7){ //NO CASO DE TER 7 SENSORES
+      sscanf(resposta_ver,"# %4x %4x %4x %4X %4x %4x %4x $", &val[0], &val[1], &val[2], &val[3], &val[4], &val[5], &val[6]);
+      Serial.print("val_1: ");
+      Serial.println(val[0]);
+      Serial.print("val_2: ");
+      Serial.println(val[1]);
+      Serial.print("val_3: ");
+      Serial.println(val[2]);
+      Serial.print("val_4: ");
+      Serial.println(val[3]);
+      Serial.print("val_5: ");
+      Serial.println(val[4]);
+      Serial.print("val_6: ");
+      Serial.println(val[5]);
+      Serial.print("val_7: ");
+      Serial.println(val[6]);
+      return 7;
+    }else if (((nsens-2)/4)==6){ //NO CASO DE TER 6 SENSORES
+      sscanf(resposta_ver,"# %4x %4x %4x %4x %4x %4x $", &val[0], &val[1], &val[2], &val[3], &val[4], &val[5]);
+      Serial.print("val_1: ");
+      Serial.println(val[0]);
+      Serial.print("val_2: ");
+      Serial.println(val[1]);
+      Serial.print("val_3: ");
+      Serial.println(val[2]);
+      Serial.print("val_4: ");
+      Serial.println(val[3]);
+      Serial.print("val_5: ");
+      Serial.println(val[4]);
+      Serial.print("val_6: ");
+      Serial.println(val[5]);
+      return 6;
+    }else if (((nsens-2)/4)==5){ //NO CASO DE TER 5 SENSORES
+      sscanf(resposta_ver,"# %4x %4x %4x %4X %4x $", &val[0], &val[1], &val[2], &val[3], &val[4]);
+      Serial.print("val_1: ");
+      Serial.println(val[0]);
+      Serial.print("val_2: ");
+      Serial.println(val[1]);
+      Serial.print("val_3: ");
+      Serial.println(val[2]);
+      Serial.print("val_4: ");
+      Serial.println(val[3]);
+      Serial.print("val_5: ");
+      Serial.println(val[4]);
+      return 5;
+    } else if (((nsens-2)/4)==4){ //NO CASO DE TER 4 SENSORES
+      sscanf(resposta_ver,"# %4x %4x %4x %4x $", &val[0], &val[1], &val[2], &val[3]);
+      Serial.print("val_1: ");
+      Serial.println(val[0]);
+      Serial.print("val_2: ");
+      Serial.println(val[1]);
+      Serial.print("val_3: ");
+      Serial.println(val[2]);
+      Serial.print("val_4: ");
+      Serial.println(val[3]);
+      return 4;
+    } else if (((nsens-2)/4)==3){ //NO CASO DE TER 3 SENSORES
+      sscanf(resposta_ver,"# %4x %4x %4x $", &val[0], &val[1], &val[2]);
+      Serial.print("val_1: ");
+      Serial.println(val[0]);
+      Serial.print("val_2: ");
+      Serial.println(val[1]);
+      Serial.print("val_3: ");
+      Serial.println(val[2]);
+      return 3;
+    } else if (((nsens-2)/4)==2){ //NO CASO DE TER 2 SENSORES
+      sscanf(resposta_ver,"# %4x %4x $", &val[0], &val[1]);
+      Serial.print("val_1: ");
+      Serial.println(val[0]);
+      Serial.print("val_2: ");
+      Serial.println(val[1]);
+      return 2;
+    } else if (((nsens-2)/4)==1){ //NO CASO DE TER 1 SENSORES
+      sscanf(resposta_ver,"# %4x $", &val[0]);
+      Serial.print("val_1: ");
+      Serial.println(val[0]);
+      return 1;
+    } else {
+      Serial.println("NÚMERO DE SENSORES INVÁLIDO");
+      return 0; //Numero de sensores invalido
+    }
+  } else {
+    return -1; //Frase inválida
+  }
+
 }
 
-void loop() {
- if (ready_check == 1) {
-    Serial.println("VERIFICADO");
+int read_serial_communication(){
     while(read_char != '$' && Serial2.available()>0){
       read_char = Serial2.read();
       if (read_char == '#'){
@@ -82,6 +182,30 @@ void loop() {
         }
       }
     }
+
+  read_char = '(';
+
+  if (ready_check==1 && frase_valida==1){
+    memcpy(resposta_ver, resposta, nsens);
+    return 1;
+  } else if (ready_check==1 && frase_valida==0){
+    return 0;
+  } else if (ready_check==0){
+    return -1;
+  } else { 
+    return 500;
+  }
+}
+
+void setup() {
+  Serial.begin(115200);
+  Serial2.begin(115200, SERIAL_8N1, RXPIN, TXPIN);
+}
+
+void loop() {
+  if (ready_check == 1) {
+    Serial.println("VERIFICADO");
+    comm_result = read_serial_communication();
   } else {
     ready_check = initial_verification();
     if (ready_check == 1){
@@ -92,181 +216,29 @@ void loop() {
       Serial.println(ready_check);
     }
   }
+  if (comm_result==1){
+    Serial.println("FRASE VÁLIDA");
+    Serial.print("RESPOSTA VERIFICADA: ");
+    Serial.println(resposta_ver);
+  } else if (comm_result==0){
+    Serial.println("RESPOSTA INVÁLIDA");
+  } else if (comm_result==-1){
+    Serial.println("REVERIFICAÇÃO NECESSÁRIA");
+  } else if (comm_result==500){
+    Serial.println("ERRO DESCONHECIDO...");
+  }
   
-  read_char = '(';
-
   Serial.print("Resposta guardada: ");
   Serial.println(resposta);
-  //Serial.println();
-  //Serial.print(resposta);
   
   Serial.print("Numero de bytes: ");
   Serial.println(nsens);
 
-if (ready_check==1 && frase_valida==1){
-  Serial.println("FRASE VÁLIDA");
-  memcpy(resposta_ver, resposta, nsens);
-  Serial.print("RESPOSTA VERIFICADA: ");
-  Serial.println(resposta_ver);
-} else if (ready_check==1 && frase_valida==0){
-  Serial.println("RESPOSTA INVÁLIDA");
-}
+  int n = decode_info(resposta_ver, val, nsens, frase_valida);
 
-if (frase_valida == 1){
-  if (((nsens-2)/4)==8){ //NO CASO DE TER 8 SENSORES
-    sscanf(resposta_ver,"# %4x %4x %4x %4X %4x %4x %4x %4x $", &val_1, &val_2, &val_3, &val_4, &val_5, &val_6, &val_7, &val_8);
-    Serial.println();
-    Serial.print("val_1: ");
-    Serial.print(val_1);
-    Serial.println();
-    Serial.print("val_2: ");
-    Serial.print(val_2);
-    Serial.println();
-    Serial.print("val_3: ");
-    Serial.print(val_3);
-    Serial.println();
-    Serial.print("val_4: ");
-    Serial.print(val_4);
-    Serial.println();
-    Serial.print("val_5: ");
-    Serial.print(val_5);
-    Serial.println();
-    Serial.print("val_6: ");
-    Serial.print(val_6);
-    Serial.println();
-    Serial.println();
-    Serial.print("val_7: ");
-    Serial.print(val_7);
-    Serial.println();
-    Serial.print("val_8: ");
-    Serial.print(val_8);
-    Serial.println();
-  }else if (((nsens-2)/4)==7){ //NO CASO DE TER 7 SENSORES
-    sscanf(resposta_ver,"# %4x %4x %4x %4X %4x %4x %4x $", &val_1, &val_2, &val_3, &val_4, &val_5, &val_6, &val_7);
-    Serial.println();
-    Serial.print("val_1: ");
-    Serial.print(val_1);
-    Serial.println();
-    Serial.print("val_2: ");
-    Serial.print(val_2);
-    Serial.println();
-    Serial.print("val_3: ");
-    Serial.print(val_3);
-    Serial.println();
-    Serial.print("val_4: ");
-    Serial.print(val_4);
-    Serial.println();
-    Serial.print("val_5: ");
-    Serial.print(val_5);
-    Serial.println();
-    Serial.println();
-    Serial.print("val_6: ");
-    Serial.print(val_6);
-    Serial.println();
-    Serial.println();
-    Serial.print("val_7: ");
-    Serial.print(val_7);
-    Serial.println();
-  }else if (((nsens-2)/4)==6){ //NO CASO DE TER 6 SENSORES
-    sscanf(resposta_ver,"# %4x %4x %4x %4x %4x %4x $", &val_1, &val_2, &val_3, &val_4, &val_5, &val_6);
-    Serial.println();
-    Serial.print("val_1: ");
-    Serial.print(val_1);
-    Serial.println();
-    Serial.print("val_2: ");
-    Serial.print(val_2);
-    Serial.println();
-    Serial.print("val_3: ");
-    Serial.print(val_3);
-    Serial.println();
-    Serial.print("val_4: ");
-    Serial.print(val_4);
-    Serial.println();
-    Serial.print("val_5: ");
-    Serial.print(val_5);
-    Serial.println();
-    Serial.print("val_6: ");
-    Serial.print(val_6);
-    Serial.println();
-  }else if (((nsens-2)/4)==5){ //NO CASO DE TER 5 SENSORES
-    sscanf(resposta_ver,"# %4x %4x %4x %4X %4x $", &val_1, &val_2, &val_3, &val_4, &val_5);
-    Serial.println();
-    Serial.print("val_1: ");
-    Serial.print(val_1);
-    Serial.println();
-    Serial.print("val_2: ");
-    Serial.print(val_2);
-    Serial.println();
-    Serial.print("val_3: ");
-    Serial.print(val_3);
-    Serial.println();
-    Serial.print("val_4: ");
-    Serial.print(val_4);
-    Serial.println();
-    Serial.print("val_5: ");
-    Serial.print(val_5);
-    Serial.println();
-  } else if (((nsens-2)/4)==4){ //NO CASO DE TER 4 SENSORES
-    sscanf(resposta_ver,"# %4x %4x %4x %4x $", &val_1, &val_2, &val_3, &val_4);
-    Serial.println();
-    Serial.print("val_1: ");
-    Serial.print(val_1);
-    Serial.println();
-    Serial.print("val_2: ");
-    Serial.print(val_2);
-    Serial.println();
-    Serial.print("val_3: ");
-    Serial.print(val_3);
-    Serial.println();
-    Serial.print("val_4: ");
-    Serial.print(val_4);
-    Serial.println();
-  } else if (((nsens-2)/4)==3){ //NO CASO DE TER 3 SENSORES
-    sscanf(resposta_ver,"# %4x %4x %4x $", &val_1, &val_2, &val_3);
-    Serial.println();
-    Serial.print("val_1: ");
-    Serial.print(val_1);
-    Serial.println();
-    Serial.print("val_2: ");
-    Serial.print(val_2);
-    Serial.println();
-    Serial.print("val_3: ");
-    Serial.print(val_3);
-    Serial.println();
-  } else if (((nsens-2)/4)==2){ //NO CASO DE TER 2 SENSORES
-    sscanf(resposta_ver,"# %4x %4x $", &val_1, &val_2);
-    Serial.println();
-    Serial.print("val_1: ");
-    Serial.print(val_1);
-    Serial.println();
-    Serial.print("val_2: ");
-    Serial.print(val_2);
-    Serial.println();
-  } else if (((nsens-2)/4)==1){ //NO CASO DE TER 1 SENSORES
-    sscanf(resposta_ver,"# %4x $", &val_1);
-    Serial.println();
-    Serial.print("val_1: ");
-    Serial.print(val_1);
-    Serial.println();
-  } else {
-    Serial.println();
-    Serial.print("NÚMERO DE SENSORES INVÁLIDO");
-    Serial.println();
-  }
-}
+  Serial.print("NUMERO DE SENSORES: ");
+  Serial.println(n);
+
 
 delay(500);
 }
-
-
-
-/*------ GRAVEYARD ------*/
-
-/*
-if (Serial2.available()>0){
-  Serial.println("Serial available: ");
-  Serial.print(Serial2.available());
-} else if (!Serial2.available()){
-  Serial.println("No messages :'(");
-}
-*/
