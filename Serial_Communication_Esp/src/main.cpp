@@ -5,6 +5,9 @@
 #define RXPIN 16
 #define TXPIN 17
 
+#define OFF 1
+#define ON 2
+
 //HardwareSerial Serial2(2);
 
 /*
@@ -198,9 +201,14 @@ int read_serial_communication(char * resposta, int * frase_valida, int * nsens, 
   }
 }
 
-int Send_i2c_msg(){
+int Send_i2c_msg(int i){
   Wire.beginTransmission(1); // transmit to device #4
-  Wire.write("#01$");        // sends five bytes  
+  Serial.println(i);
+  if (i==1) {
+    Wire.write("#01$");
+  } else if (i==2){ 
+    Wire.write("#02$");
+  }
   Wire.endTransmission();    // stop transmitting
   return 0;
 }
@@ -248,7 +256,7 @@ void loop() {
   Serial.print("NUMERO DE SENSORES: ");
   Serial.println(n);
 
-  Send_i2c_msg();
+  Send_i2c_msg(OFF);
 
 delay(500);
 }
