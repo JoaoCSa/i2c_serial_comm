@@ -1,5 +1,6 @@
 #include <Arduino.h>
 #include <HardwareSerial.h>
+#include <Wire.h>
 
 #define RXPIN 16
 #define TXPIN 17
@@ -197,25 +198,23 @@ int read_serial_communication(char * resposta, int * frase_valida, int * nsens, 
   }
 }
 
+int Send_i2c_msg(){
+  Wire.beginTransmission(1); // transmit to device #4
+  Wire.write("#01$");        // sends five bytes  
+  Wire.endTransmission();    // stop transmitting
+  return 0;
+}
+
 void setup() {
   Serial.begin(115200);
   Serial2.begin(115200, SERIAL_8N1, RXPIN, TXPIN);
+  Wire.begin();
 }
 
 void loop() {
   if (ready_check == 1) {
     Serial.println("VERIFICADO");
     comm_result = read_serial_communication(resposta, &frase_valida, &nsens, &ready_check);
-    /*
-    Serial.print("RESPOSTAAAAAAAAAAAAAAAAAAA:");
-    Serial.println(resposta);
-    Serial.print("VALIDADEEEEEEEEEEEEEEEEEEE:");
-    Serial.println(frase_valida);
-    Serial.print("NSEEEEEEEEEEEEEEEEEEEEEENS:");
-    Serial.println(nsens);
-    Serial.print("READYYYYYYYYYYYYYYYYYYYYYY:");
-    Serial.println(ready_check);
-    */
   } else {
     ready_check = initial_verification();
     if (ready_check == 1){
@@ -249,6 +248,7 @@ void loop() {
   Serial.print("NUMERO DE SENSORES: ");
   Serial.println(n);
 
+  Send_i2c_msg();
 
 delay(500);
 }
