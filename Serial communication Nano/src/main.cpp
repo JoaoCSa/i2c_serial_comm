@@ -13,7 +13,7 @@ SoftwareSerial mySerial(2, 3); // RX, TX
 int len=0, command=0, sens1 = A0, sens2 = A1, sens3 = A2, sens4 = A3, sens5 = A6, i=0, t=0;
 uint16_t val1=0, val2=0, val3=0, val4=0, val5=0;
 char frase[40], get_char, frase_i2c_master[10];
-unsigned int val[2];
+unsigned int val[2], val_sens[8];
 
 void receiveEvent(int howMany)
 {
@@ -53,6 +53,78 @@ int decode_i2c_info(unsigned int * val, int len){
   return -500;
 }
 
+int send_serial(int num_sens, unsigned int * val){
+  switch(num_sens){
+  case 1:
+    sprintf(frase, "#%04X$", val[0]);
+    if (mySerial){
+      Serial.println("mySerial ready!");
+      mySerial.write(frase); 
+    }
+    return 1;
+    break;
+  case 2:
+    sprintf(frase, "#%04X%04X$", val[0], val[1]);
+    if (mySerial){
+      Serial.println("mySerial ready!");
+      mySerial.write(frase); 
+    }
+    return 2;
+    break;
+  case 3:
+    sprintf(frase, "#%04X%04X%04X$", val[0], val[1], val[2]);
+    if (mySerial){
+      Serial.println("mySerial ready!");
+      mySerial.write(frase); 
+    } 
+    return 3;
+    break;
+  case 4:
+    sprintf(frase, "#%04X%04X%04X%04X$", val[0], val[1], val[2], val[3]);
+    if (mySerial){
+      Serial.println("mySerial ready!");
+      mySerial.write(frase); 
+    }
+    return 4;
+    break;
+  case 5:
+    sprintf(frase, "#%04X%04X%04X%04X%04X$", val[0], val[1], val[2], val[3], val[4]);
+    if (mySerial){
+      Serial.println("mySerial ready!");
+      mySerial.write(frase); 
+    }
+    return 5;
+    break;
+  case 6:
+    sprintf(frase, "#%04X%04X%04X%04X%04X%04X$", val[0], val[1], val[2], val[3], val[4], val[5]);
+    if (mySerial){
+      Serial.println("mySerial ready!");
+      mySerial.write(frase); 
+    }   
+    return 6;
+    break;
+  case 7:
+    sprintf(frase, "#%04X%04X%04X%04X%04X%04X%04X$", val[0], val[1], val[2], val[3], val[4], val[5], val[6]);
+    if (mySerial){
+      Serial.println("mySerial ready!");
+      mySerial.write(frase); 
+    }  
+    return 7;
+    break;
+  case 8:
+    sprintf(frase, "#%04X%04X%04X%04X%04X%04X%04X%04X$", val[0], val[1], val[2], val[3], val[4], val[5], val[6], val[7]);
+    if (mySerial){
+      Serial.println("mySerial ready!");
+      mySerial.write(frase); 
+    }  
+    return 8;
+    break;
+  default:  
+    return 0;
+  }
+  return -500;
+}
+
 void setup()
 {
   Serial.begin(115200);
@@ -65,11 +137,11 @@ void setup()
 void loop()
 {
   
-  val1 = analogRead(sens1);
-  val2 = analogRead(sens2);
-  val3 = analogRead(sens3);
-  val4 = analogRead(sens4);
-  val5 = analogRead(sens5); 
+  val_sens[0] = analogRead(sens1);
+  val_sens[1] = analogRead(sens2);
+  val_sens[2] = analogRead(sens3);
+  val_sens[3] = analogRead(sens4);
+  val_sens[4] = analogRead(sens5); 
   
   /*
   val1 = 134;
@@ -80,16 +152,18 @@ void loop()
   */
   Serial.println();
   Serial.println(len);
-  sprintf(frase, "#%04X%04X%04X%04X%04X$", val1, val2, val3, val4, val5);
+  //sprintf(frase, "#%04X%04X%04X%04X%04X$", val1, val2, val3, val4, val5);
   //mySerial.write("Hello World!"); 
-  
+  int h = send_serial(5, val_sens);
+  Serial.print("N. Sens: ");
+  Serial.println(h);
   Serial.print("Frase: ");
   Serial.println(frase);
 
-  if (mySerial){
-    Serial.println("mySerial ready!");
-    mySerial.write(frase); 
-  }
+  // if (mySerial){
+  //   Serial.println("mySerial ready!");
+  //   mySerial.write(frase); 
+  // }
 
   Serial.print("TAMANHO DA FRASE I2C: ");
   Serial.println(sizeof(frase_i2c_master));

@@ -201,12 +201,12 @@ int read_serial_communication(char * resposta, int * frase_valida, int * nsens, 
   }
 }
 
-int Send_i2c_msg(int t, int c, int i){
+int Send_i2c_msg(int slave_id, int disp, int i){
   char frase[10];
-  Wire.beginTransmission(t); // transmit to device #4
+  Wire.beginTransmission(slave_id); // transmit to device slave_id
   Serial.println(i);
   
-  sprintf(frase, "#%02X%02X%02X$", t, c, i);
+  sprintf(frase, "#%02X%02X%02X$", slave_id, disp, i);
   Wire.write(frase);
 
   Wire.endTransmission();    // stop transmitting
