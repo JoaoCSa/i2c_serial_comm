@@ -201,13 +201,16 @@ int read_serial_communication(char * resposta, int * frase_valida, int * nsens, 
   }
 }
 
-int Send_i2c_msg(int i){
-  Wire.beginTransmission(1); // transmit to device #4
+int Send_i2c_msg(int t,int i){
+  char frase[10];
+  Wire.beginTransmission(t); // transmit to device #4
   Serial.println(i);
   if (i==1) {
-    Wire.write("#01$");
+    sprintf(frase, "#%02X%02X$", t, i);
+    Wire.write(frase);
   } else if (i==2){ 
-    Wire.write("#02$");
+    sprintf(frase, "#%02X%02X$", t, i);
+    Wire.write(frase);
   }
   Wire.endTransmission();    // stop transmitting
   return 0;
@@ -256,7 +259,7 @@ void loop() {
   Serial.print("NUMERO DE SENSORES: ");
   Serial.println(n);
 
-  Send_i2c_msg(OFF);
+  Send_i2c_msg(1, OFF); //salve_id, command [ON, OFF]
 
 delay(500);
 }
