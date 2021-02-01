@@ -41,7 +41,7 @@ int decode_info(char * frase, unsigned int * val, int nsens, int frase_valida){ 
  
   if (frase_valida == 1){
     if (((nsens-2)/4)==8){ //NO CASO DE TER 8 SENSORES
-      sscanf(resposta_ver,"# %4x %4x %4x %4X %4x %4x %4x %4x $", &val[0], &val[1], &val[2], &val[3], &val[4], &val[5], &val[6], &val[7]);
+      sscanf(frase,"# %4x %4x %4x %4X %4x %4x %4x %4x $", &val[0], &val[1], &val[2], &val[3], &val[4], &val[5], &val[6], &val[7]);
       Serial.print("val_1: ");
       Serial.println(val[0]);
       Serial.print("val_2: ");
@@ -60,7 +60,7 @@ int decode_info(char * frase, unsigned int * val, int nsens, int frase_valida){ 
       Serial.println(val[7]);
       return 8;
     }else if (((nsens-2)/4)==7){ //NO CASO DE TER 7 SENSORES
-      sscanf(resposta_ver,"# %4x %4x %4x %4X %4x %4x %4x $", &val[0], &val[1], &val[2], &val[3], &val[4], &val[5], &val[6]);
+      sscanf(frase,"# %4x %4x %4x %4X %4x %4x %4x $", &val[0], &val[1], &val[2], &val[3], &val[4], &val[5], &val[6]);
       Serial.print("val_1: ");
       Serial.println(val[0]);
       Serial.print("val_2: ");
@@ -77,7 +77,7 @@ int decode_info(char * frase, unsigned int * val, int nsens, int frase_valida){ 
       Serial.println(val[6]);
       return 7;
     }else if (((nsens-2)/4)==6){ //NO CASO DE TER 6 SENSORES
-      sscanf(resposta_ver,"# %4x %4x %4x %4x %4x %4x $", &val[0], &val[1], &val[2], &val[3], &val[4], &val[5]);
+      sscanf(frase,"# %4x %4x %4x %4x %4x %4x $", &val[0], &val[1], &val[2], &val[3], &val[4], &val[5]);
       Serial.print("val_1: ");
       Serial.println(val[0]);
       Serial.print("val_2: ");
@@ -92,7 +92,7 @@ int decode_info(char * frase, unsigned int * val, int nsens, int frase_valida){ 
       Serial.println(val[5]);
       return 6;
     }else if (((nsens-2)/4)==5){ //NO CASO DE TER 5 SENSORES
-      sscanf(resposta_ver,"# %4x %4x %4x %4X %4x $", &val[0], &val[1], &val[2], &val[3], &val[4]);
+      sscanf(frase,"# %4x %4x %4x %4X %4x $", &val[0], &val[1], &val[2], &val[3], &val[4]);
       Serial.print("val_1: ");
       Serial.println(val[0]);
       Serial.print("val_2: ");
@@ -105,7 +105,7 @@ int decode_info(char * frase, unsigned int * val, int nsens, int frase_valida){ 
       Serial.println(val[4]);
       return 5;
     } else if (((nsens-2)/4)==4){ //NO CASO DE TER 4 SENSORES
-      sscanf(resposta_ver,"# %4x %4x %4x %4x $", &val[0], &val[1], &val[2], &val[3]);
+      sscanf(frase,"# %4x %4x %4x %4x $", &val[0], &val[1], &val[2], &val[3]);
       Serial.print("val_1: ");
       Serial.println(val[0]);
       Serial.print("val_2: ");
@@ -116,7 +116,7 @@ int decode_info(char * frase, unsigned int * val, int nsens, int frase_valida){ 
       Serial.println(val[3]);
       return 4;
     } else if (((nsens-2)/4)==3){ //NO CASO DE TER 3 SENSORES
-      sscanf(resposta_ver,"# %4x %4x %4x $", &val[0], &val[1], &val[2]);
+      sscanf(frase,"# %4x %4x %4x $", &val[0], &val[1], &val[2]);
       Serial.print("val_1: ");
       Serial.println(val[0]);
       Serial.print("val_2: ");
@@ -125,14 +125,14 @@ int decode_info(char * frase, unsigned int * val, int nsens, int frase_valida){ 
       Serial.println(val[2]);
       return 3;
     } else if (((nsens-2)/4)==2){ //NO CASO DE TER 2 SENSORES
-      sscanf(resposta_ver,"# %4x %4x $", &val[0], &val[1]);
+      sscanf(frase,"# %4x %4x $", &val[0], &val[1]);
       Serial.print("val_1: ");
       Serial.println(val[0]);
       Serial.print("val_2: ");
       Serial.println(val[1]);
       return 2;
     } else if (((nsens-2)/4)==1){ //NO CASO DE TER 1 SENSORES
-      sscanf(resposta_ver,"# %4x $", &val[0]);
+      sscanf(frase,"# %4x $", &val[0]);
       Serial.print("val_1: ");
       Serial.println(val[0]);
       return 1;
