@@ -36,19 +36,19 @@ void receiveEvent(int howMany)
 }
 
 int decode_i2c_info(unsigned int * val, int len){
-  if(len != 6){
+  if(len != 8){
     return -100;
   } else {
-    sscanf(frase_i2c_master,"# %2x %2x $", &val[0], &val[1]);
+    sscanf(frase_i2c_master,"# %2x %2x %2x$", &val[0], &val[1], &val[2]);
     // Serial.print("val_1: ");
     // Serial.println(val[0]);
     // Serial.print("val_2: ");
     // Serial.println(val[1]);
-    if(val[0]!=i2c_slave_id && (val[1]==1 || val[1]==2)) return -101;
-    else if(val[0]==i2c_slave_id && (val[1]!=1 && val[1]!=2)) return -102;
-    else if(val[0]!=i2c_slave_id && val[1]!=1 && val[1]!=2) return -103;
-    else if(val[1]==1) return 0;
-    else if(val[1]==2) return 0;
+    if(val[0]!=i2c_slave_id && (val[2]==1 || val[2]==2)) return -101;
+    else if(val[0]==i2c_slave_id && (val[2]!=1 && val[2]!=2)) return -102;
+    else if(val[0]!=i2c_slave_id && val[2]!=1 && val[2]!=2) return -103;
+    else if(val[2]==1) return 0;
+    else if(val[2]==2) return 1;
   }
   return -500;
 }
@@ -106,10 +106,12 @@ void loop()
   else if(command == -500) Serial.println("ERRO: saída inesperada");
   else if(command == 0){
     Serial.println("OFF");
-    //digitalWrite(,FALSE); //DESCOMENTAR E ACRESCEBTAR VALOR DO PINO
+    Serial.print("SENSOR: ");
+    Serial.println(val[1]);
+    //digitalWrite(val[1], false); //DESCOMENTAR E ACRESCEBTAR VALOR DO PINO
   } else if(command == 1){ 
     Serial.println("ON");
-    //digitalWrite(,TRUE); //DESCOMENTAR E ACRESCEBTAR VALOR DO PINO
+    //digitalWrite(val[1], true); //DESCOMENTAR E ACRESCEBTAR VALOR DO PINO
   }
 
 
@@ -120,6 +122,7 @@ void loop()
   // } else {
   //   Serial.println("Mensagem desconhecida...");
   // }
+if (Wire.available()==0) len=0;
 
 delay(500);
 }
