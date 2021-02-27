@@ -15,7 +15,7 @@ Varáveis usadas no código i2c
 */
 int ready_check=0, i=0, j=0, waiting_1st=0, nsens=0, frase_valida=0, comm_result=0;
 unsigned int val[9];
-char check_char, resposta[40], read_char, resposta_ver[40]; 
+char check_char, resposta[40], read_char, resposta_verif[40]; 
 
 int initial_verification(){
   while (check_char != '$' && Serial2.available()>0){
@@ -146,7 +146,9 @@ int decode_info(char * frase, unsigned int * val, int nsens, int frase_valida){ 
 
 }
 
-int read_serial_communication(char * resposta, int * frase_valida, int * nsens, int * ready_check){
+int read_serial_communication(char * resposta_ver, char * resposta, int * frase_valida, int * nsens, int * ready_check){
+    char read_char = '(';
+    int j=0, waiting_1st=0;
     while(read_char != '$' && Serial2.available()>0){
       read_char = Serial2.read();
       if (read_char == '#'){
@@ -201,7 +203,12 @@ int read_serial_communication(char * resposta, int * frase_valida, int * nsens, 
   }
 }
 
-int Send_i2c_msg(int slave_id, int disp, int i){
+int Send_serial_msg(){
+
+  return 0;
+}
+
+void Send_i2c_msg(int slave_id, int disp, int i){
   char frase[10];
   Wire.beginTransmission(slave_id); // transmit to device slave_id
   Serial.println(i);
@@ -210,7 +217,6 @@ int Send_i2c_msg(int slave_id, int disp, int i){
   Wire.write(frase);
 
   Wire.endTransmission();    // stop transmitting
-  return 0;
 }
 
 void setup() {
@@ -222,7 +228,7 @@ void setup() {
 void loop() {
   if (ready_check == 1) {
     Serial.println("VERIFICADO");
-    comm_result = read_serial_communication(resposta, &frase_valida, &nsens, &ready_check);
+    comm_result = read_serial_communication(resposta_verif ,resposta, &frase_valida, &nsens, &ready_check);
   } else {
     ready_check = initial_verification();
     if (ready_check == 1){
@@ -236,7 +242,7 @@ void loop() {
   if (comm_result==1){
     Serial.println("FRASE VÁLIDA");
     Serial.print("RESPOSTA VERIFICADA: ");
-    Serial.println(resposta_ver);
+    Serial.println(resposta_verif);
   } else if (comm_result==0){
     Serial.println("RESPOSTA INVÁLIDA");
   } else if (comm_result==-1){
@@ -251,7 +257,7 @@ void loop() {
   Serial.print("Numero de bytes: ");
   Serial.println(nsens);
 
-  int n = decode_info(resposta_ver, val, nsens, frase_valida);
+  int n = decode_info(resposta_verif, val, nsens, frase_valida);
 
   Serial.print("NUMERO DE SENSORES: ");
   Serial.println(n);
