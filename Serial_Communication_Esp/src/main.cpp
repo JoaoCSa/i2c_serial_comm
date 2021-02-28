@@ -13,7 +13,7 @@
 /*
 Varáveis usadas no código i2c
 */
-int ready_check=0, i=0, b=0, j=0, waiting_1st=0, nsens=0, frase_valida=0, comm_result=0, state_atual=0, state_anterior=0;
+int ready_check=0, i=0, b=0, j=0, waiting_1st=0, nsens=0, frase_valida=0, comm_result=0, state_atual=0, state_anterior=0, resend=0;
 unsigned int val[9];
 char check_char ='(', resposta[40], read_char, resposta_verif[40]; 
 
@@ -235,14 +235,40 @@ void setup() {
 
 void loop() {
 
-  if (state_atual != state_anterior){
+  if ((state_atual != state_anterior) /*|| resend==1*/){
     Serial.println();
     Serial.println("ENTROU NO SEND MSG");
 
-    int f = Send_serial_msg(1, state_atual, OFF);
+    int f = Send_serial_msg(1, state_atual, OFF); // o state atual aqui vai mudar para o dispositivo, isto foi so para testes
     Serial.print("TESTES.Dispositivo:");
     Serial.println(f);
-    state_anterior=state_atual;
+      
+    state_atual = state_anterior;
+/*
+    comm_result = read_serial_communication(resposta_verif ,resposta, &frase_valida, &nsens, &ready_check);
+    if (comm_result==1){
+      Serial.println("FRASE VÁLIDA");
+      Serial.print("RESPOSTA VERIFICADA: ");
+      Serial.println(resposta_verif);
+      decode_info(resposta_verif, val, nsens, frase_valida);
+      if (val[0]== 454) resend=1;
+      else 
+      {
+        resend=0;
+        state_anterior=state_atual;
+      }
+    } else if (comm_result==0){
+      Serial.println("RESPOSTA INVÁLIDA");
+      resend=1;
+    } else if (comm_result==-1){
+      Serial.println("REVERIFICAÇÃO NECESSÁRIA");
+      resend=1;
+    } else if (comm_result==500){
+      Serial.println("ERRO DESCONHECIDO...");
+      resend=1;
+    }
+*/
+
   } else {
     Serial.println();
     Serial.println("ENTROU NO RECV MSG");
@@ -291,8 +317,7 @@ void loop() {
   } else if (b<10){
     b++;
   }
-  
-  
+
   
   //Send_i2c_msg(1, 5, OFF); //salve_id, pino do componente,mcommand [ON, OFF]
 

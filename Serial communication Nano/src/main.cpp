@@ -10,7 +10,7 @@ TX is digital pin 3 (connect to RX of other device)
 
 SoftwareSerial mySerial(2, 3); // RX, TX
  
-int len=0, command=0, sens1 = A0, sens2 = A1, sens3 = A2, sens4 = A3, sens5 = A6, i=0, t=0;
+int len=0, command=0, sens1 = A0, sens2 = A1, sens3 = A2, sens4 = A3, sens5 = A6, i=0, t=0, resend=0;
 uint16_t val1=0, val2=0, val3=0, val4=0, val5=0;
 char /*frase[40],*/ get_char, frase_i2c_master[10];
 unsigned int val[3], val_sens[8];
@@ -121,9 +121,9 @@ int rcv_command_msgs(char * resposta, int peak, unsigned int * val){
   return -501;
 }
 
-int send_serial(int num_sens, unsigned int * va, int peak){
+int send_serial(int num_sens, unsigned int * val, int peak){
   char frase[40];
-  if (peak==1) return -105;
+  if (peak==1) return -106;
   else {
     switch(num_sens){
     case 1:
@@ -190,6 +190,16 @@ int send_serial(int num_sens, unsigned int * va, int peak){
       }  
       return 8;
       break;
+    /*
+    case 454:
+      sprintf(frase, "$&&&#%04X$", val[0]);
+      if (mySerial){
+        Serial.print("MENSAGEM DE ERRO");
+        Serial.println(frase);
+      }
+      return 1454;
+      break;
+    */
     default:  
       return 0;
     }
@@ -223,8 +233,8 @@ void loop()
   val4 = 0;
   val5 = 56;
   */
-  Serial.println();
-  Serial.println(len);
+  //Serial.println();
+  //Serial.println(len);
   //sprintf(frase, "#%04X%04X%04X%04X%04X$", val1, val2, val3, val4, val5);
   //mySerial.write("Hello World!"); 
   //int p = peak_command_msgs();
@@ -237,11 +247,11 @@ void loop()
   //   mySerial.write(frase); 
   // }
 
-  int peak = peak_command_msgs();
-  if (peak==1) Serial.println("Mensagens do Master disponíveis. Não enviar mensagens");
+  int peak = peak_command_msgs();   //Verifica se há msg no esp à espera de serem enviadas
+  if (peak==1 /*|| resend==1*/) Serial.println("Mensagens do Master disponíveis. Não enviar mensagens");
   else Serial.println("Sem mensagens do Master. Autorizado a enviar mensagens");
   
-  command = rcv_command_msgs(frase_i2c_master, peak, val); 
+  command = rcv_command_msgs(frase_i2c_master, peak, val);
   Serial.print("Valor retornado por 'rcv_command_msgs': ");
   //command = decode_i2c_info(frase_i2c_master, val, len);
   //Serial.print("Valor retornado por 'decode_i2c_info': ");
@@ -251,11 +261,10 @@ void loop()
   Serial.println(sizeof(frase_i2c_master));
   Serial.println(frase_i2c_master);
 
-  
+  /*DESCOMENTAR ESTA PARTER*/
   int h = send_serial(5, val_sens, peak);
   Serial.print("N. Sens: ");
   Serial.println(h);
-  
   
   if(command == -100) Serial.println("ERRO: tamanho da frase recebida inválido");
   else if(command == -101) Serial.println("ERRO: id do slave incorreto");
@@ -274,7 +283,22 @@ void loop()
     //digitalWrite(val[1], true); //DESCOMENTAR E ACRESCEBTAR VALOR DO PINO
   }
 
-
+/*NOVA PARTE*/
+/*
+  if (command == -100 || command == -101 || command == -102 || command == -103 || command == -104 || command == -500 || command == -501){
+    val_sens[0] = 454;
+    resend = 1;
+    int p = send_serial(454, val_sens, 0); //NO CASO DE SER ERRO, VOLTA A PEDIR PARA MANDAR
+    Serial.print("Pedido para reenviar: ");
+    Serial.println(p);
+  } else if (command == 1 || command ==0){
+    val_sens[0] = 0;
+    resend = 0;
+    send_serial(454, val_sens, 0); //NO CASO DE SER ERRO, VOLTA A PEDIR PARA MANDAR
+    Serial.print("Pedido para reenviar: ");
+    Serial.println(0);
+  } 
+*/
   // if (strcmp(frase_i2c_master,"#01$")==0){
   //   Serial.println("digitalWrite(qq coisa a LOW)");
   // } else if (strcmp(frase_i2c_master,"#02$")==0){
