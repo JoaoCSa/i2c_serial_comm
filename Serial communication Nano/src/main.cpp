@@ -13,7 +13,7 @@ SoftwareSerial mySerial(2, 3); // RX, TX
 int len=0, command=0, sens1 = A0, sens2 = A1, sens3 = A2, sens4 = A3, sens5 = A6, i=0, t=0;
 uint16_t val1=0, val2=0, val3=0, val4=0, val5=0;
 char /*frase[40],*/ get_char, frase_i2c_master[10];
-unsigned int val[2], val_sens[8];
+unsigned int val[3], val_sens[8];
 
 void receiveEvent(int howMany)
 {
@@ -53,154 +53,148 @@ int decode_i2c_info(char * frase_i2c_master, unsigned int * val, int len){
   return -500;
 }
 
-int peak_command_msgs(char * resposta_ver, char * resposta, int * frase_valida, int * nsens, int * ready_check){
-  char read_char;
-  int j=0, waiting_1st=0;
-  while(read_char != '$' && mySerial.available()>0){
-    read_char = mySerial.read();
-    if (read_char == '#'){
-        resposta[j] = read_char;
-        j++;
-        waiting_1st=0;
-    } else if ((waiting_1st==0) && ((read_char >= '0' && read_char <= '9') || (read_char >= 'A' && read_char <= 'F') || (read_char >= 'a' && read_char <= 'f') || read_char == '#' || read_char == '$')){ //mudei de 'z' para 'f'     
-        //Serial.print("Hello there :)");
-        resposta[j] = read_char;
-        if (read_char == '$'){
-          Serial.print("J: ");
-          Serial.println(j);
-          Serial.print("Read char: ");
-          Serial.println(read_char);
-          if(j != 9){
-            return -100;
-          } else {
-            sscanf(resposta,"#%2x %2x %2x$", &val[0], &val[1], &val[2]);
-            // Serial.print("val_1: ");
-            // Serial.println(val[0]);
-            // Serial.print("val_2: ");
-            // Serial.println(val[1]);
-            if(val[0]!=i2c_slave_id && (val[2]==1 || val[2]==2)) return -101;
-            else if(val[0]==i2c_slave_id && (val[2]!=1 && val[2]!=2)) return -102;
-            else if(val[0]!=i2c_slave_id && val[2]!=1 && val[2]!=2) return -103;
-            else if(val[2]==1) return 0;
-            else if(val[2]==2) return 1;
-              
-            return -500;
-/*
-VER O QUE FAZER COM ESTA PARTE DO CODIGO... BASICAMENTE QUERO VERIFICAR SE HA
-MSG PARA SEREM RECEBIDAS ANTES DE ENVIAR OUTRA, E CASO HAJA, RECEBO A MSG E 
-VERIFICO SE ESTÁ FIXE
-*/
-            waiting_1st=1;  
-            *nsens=0;
-            *frase_valida=0;
-            Serial.println("ERRO NA LEITURA DE SENSORES... VERIFICAR SE ESTÁ A SER ENVIADA A LEITURA NO FORMATO %4X"); 
-          }
-          *nsens=j+1;
-          j=0;
-          *frase_valida=1;
-        } else {
-          j++;
-        }
-    } else {
-      Serial.println("WAITING FOR #..."); 
-      waiting_1st=1;
-      j=0;
-      *nsens=0;
-      *frase_valida=0;
-      i++;
-      if (i==5){
-        *ready_check=0;
-        i=0;
-      }
-    }
-  }
-
-  read_char = '(';
-
-  if (*ready_check==1 && *frase_valida==1){
-    memcpy(resposta_ver, resposta, *nsens);
-    return 1;
-  } else if (*ready_check==1 && *frase_valida==0){
-    return 0;
-  } else if (*ready_check==0){
-    return -1;
-  } else { 
-    return 500;
-  }
-
-  return 0;
+int peak_command_msgs(){
+  if (mySerial.available()>0) return 1;
+  else return 0;
 }
 
-int send_serial(int num_sens, unsigned int * val){
+int rcv_command_msgs(char * resposta, int peak, unsigned int * val){
+  char read_char= '(';
+  int j=0, waiting_1st=1;
+  if (peak==1){
+    while(read_char != '$' && mySerial.available()>0){
+      read_char = mySerial.read();
+      if (read_char == '#'){
+          resposta[j] = read_char;
+          j++;
+          waiting_1st=0;
+      } else if ((waiting_1st==0) && ((read_char >= '0' && read_char <= '9') || (read_char >= 'A' && read_char <= 'F') || (read_char >= 'a' && read_char <= 'f') || read_char == '#' || read_char == '$')){ //mudei de 'z' para 'f'     
+          //Serial.print("Hello there :)");
+          resposta[j] = read_char;
+          Serial.print("Read char: ");
+          Serial.println(read_char);
+          if (read_char == '$'){
+            Serial.print("J: ");
+            Serial.println(j);
+            Serial.print("Read char: ");
+            Serial.println(read_char);
+            if(j != 7){
+              return -100;
+            } else {
+              sscanf(resposta,"#%2x %2x %2x$", &val[0], &val[1], &val[2]);
+              Serial.print("Resposta: ");
+              Serial.println(resposta);
+              Serial.print("val_1: ");
+              Serial.println(val[0]);
+              Serial.print("val_2: ");
+              Serial.println(val[1]);
+              Serial.print("val_3: ");
+              Serial.println(val[2]);
+              if(val[0]!=i2c_slave_id && (val[2]==1 || val[2]==2)) return -101;
+              else if(val[0]==i2c_slave_id && (val[2]!=1 && val[2]!=2)) return -102;
+              else if(val[0]!=i2c_slave_id && val[2]!=1 && val[2]!=2) return -103;
+              else if(val[2]==1) return 0;
+              else if(val[2]==2) return 1;
+                          
+              return -500;
+  /*
+  VER O QUE FAZER COM ESTA PARTE DO CODIGO... BASICAMENTE QUERO VERIFICAR SE HA
+  MSG PARA SEREM RECEBIDAS ANTES DE ENVIAR OUTRA, E CASO HAJA, RECEBO A MSG E 
+  VERIFICO SE ESTÁ FIXE
+  */ 
+            }
+          } else {
+            j++;
+          }
+      } else {
+        Serial.println("WAITING FOR #..."); 
+        waiting_1st=1;
+        j=0;
+        i++;
+        if (i==7){
+          return -104; //WAITED FOR TOO LONG
+          i=0;
+        }
+      }
+    }
+  } else return -105; //NO MSGS TO READ
+  return -501;
+}
+
+int send_serial(int num_sens, unsigned int * va, int peak){
   char frase[40];
-  switch(num_sens){
-  case 1:
-    sprintf(frase, "#%04X$", val[0]);
-    if (mySerial){
-      Serial.println("mySerial ready!");
-      mySerial.write(frase); 
+  if (peak==1) return -105;
+  else {
+    switch(num_sens){
+    case 1:
+      sprintf(frase, "#%04X$", val[0]);
+      if (mySerial){
+        Serial.println("mySerial ready!");
+        mySerial.write(frase); 
+      }
+      return 1;
+      break;
+    case 2:
+      sprintf(frase, "#%04X%04X$", val[0], val[1]);
+      if (mySerial){
+        Serial.println("mySerial ready!");
+        mySerial.write(frase); 
+      }
+      return 2;
+      break;
+    case 3:
+      sprintf(frase, "#%04X%04X%04X$", val[0], val[1], val[2]);
+      if (mySerial){
+        Serial.println("mySerial ready!");
+        mySerial.write(frase); 
+      } 
+      return 3;
+      break;
+    case 4:
+      sprintf(frase, "#%04X%04X%04X%04X$", val[0], val[1], val[2], val[3]);
+      if (mySerial){
+        Serial.println("mySerial ready!");
+        mySerial.write(frase); 
+      }
+      return 4;
+      break;
+    case 5:
+      sprintf(frase, "#%04X%04X%04X%04X%04X$", val[0], val[1], val[2], val[3], val[4]);
+      if (mySerial){
+        Serial.println("mySerial ready!");
+        mySerial.write(frase); 
+      }
+      return 5;
+      break;
+    case 6:
+      sprintf(frase, "#%04X%04X%04X%04X%04X%04X$", val[0], val[1], val[2], val[3], val[4], val[5]);
+      if (mySerial){
+        Serial.println("mySerial ready!");
+        mySerial.write(frase); 
+      }   
+      return 6;
+      break;
+    case 7:
+      sprintf(frase, "#%04X%04X%04X%04X%04X%04X%04X$", val[0], val[1], val[2], val[3], val[4], val[5], val[6]);
+      if (mySerial){
+        Serial.println("mySerial ready!");
+        mySerial.write(frase); 
+      }  
+      return 7;
+      break;
+    case 8:
+      sprintf(frase, "#%04X%04X%04X%04X%04X%04X%04X%04X$", val[0], val[1], val[2], val[3], val[4], val[5], val[6], val[7]);
+      if (mySerial){
+        Serial.println("mySerial ready!");
+        mySerial.write(frase); 
+      }  
+      return 8;
+      break;
+    default:  
+      return 0;
     }
-    return 1;
-    break;
-  case 2:
-    sprintf(frase, "#%04X%04X$", val[0], val[1]);
-    if (mySerial){
-      Serial.println("mySerial ready!");
-      mySerial.write(frase); 
-    }
-    return 2;
-    break;
-  case 3:
-    sprintf(frase, "#%04X%04X%04X$", val[0], val[1], val[2]);
-    if (mySerial){
-      Serial.println("mySerial ready!");
-      mySerial.write(frase); 
-    } 
-    return 3;
-    break;
-  case 4:
-    sprintf(frase, "#%04X%04X%04X%04X$", val[0], val[1], val[2], val[3]);
-    if (mySerial){
-      Serial.println("mySerial ready!");
-      mySerial.write(frase); 
-    }
-    return 4;
-    break;
-  case 5:
-    sprintf(frase, "#%04X%04X%04X%04X%04X$", val[0], val[1], val[2], val[3], val[4]);
-    if (mySerial){
-      Serial.println("mySerial ready!");
-      mySerial.write(frase); 
-    }
-    return 5;
-    break;
-  case 6:
-    sprintf(frase, "#%04X%04X%04X%04X%04X%04X$", val[0], val[1], val[2], val[3], val[4], val[5]);
-    if (mySerial){
-      Serial.println("mySerial ready!");
-      mySerial.write(frase); 
-    }   
-    return 6;
-    break;
-  case 7:
-    sprintf(frase, "#%04X%04X%04X%04X%04X%04X%04X$", val[0], val[1], val[2], val[3], val[4], val[5], val[6]);
-    if (mySerial){
-      Serial.println("mySerial ready!");
-      mySerial.write(frase); 
-    }  
-    return 7;
-    break;
-  case 8:
-    sprintf(frase, "#%04X%04X%04X%04X%04X%04X%04X%04X$", val[0], val[1], val[2], val[3], val[4], val[5], val[6], val[7]);
-    if (mySerial){
-      Serial.println("mySerial ready!");
-      mySerial.write(frase); 
-    }  
-    return 8;
-    break;
-  default:  
-    return 0;
   }
+
   return -500;
 }
 
@@ -234,10 +228,7 @@ void loop()
   //sprintf(frase, "#%04X%04X%04X%04X%04X$", val1, val2, val3, val4, val5);
   //mySerial.write("Hello World!"); 
   //int p = peak_command_msgs();
-  int h = send_serial(5, val_sens);
 
-  Serial.print("N. Sens: ");
-  Serial.println(h);
   //Serial.print("Frase: ");
   //Serial.println(frase);
 
@@ -246,19 +237,33 @@ void loop()
   //   mySerial.write(frase); 
   // }
 
+  int peak = peak_command_msgs();
+  if (peak==1) Serial.println("Mensagens do Master disponíveis. Não enviar mensagens");
+  else Serial.println("Sem mensagens do Master. Autorizado a enviar mensagens");
+  
+  command = rcv_command_msgs(frase_i2c_master, peak, val); 
+  Serial.print("Valor retornado por 'rcv_command_msgs': ");
+  //command = decode_i2c_info(frase_i2c_master, val, len);
+  //Serial.print("Valor retornado por 'decode_i2c_info': ");
+  Serial.println(command);
+
   Serial.print("TAMANHO DA FRASE I2C: ");
   Serial.println(sizeof(frase_i2c_master));
   Serial.println(frase_i2c_master);
-  
-  command = decode_i2c_info(frase_i2c_master, val, len);
-  Serial.print("Valor retornado por 'decode_i2c_info': ");
-  Serial.println(command);
 
+  
+  int h = send_serial(5, val_sens, peak);
+  Serial.print("N. Sens: ");
+  Serial.println(h);
+  
+  
   if(command == -100) Serial.println("ERRO: tamanho da frase recebida inválido");
   else if(command == -101) Serial.println("ERRO: id do slave incorreto");
   else if(command == -102) Serial.println("ERRO: ordens incorretas");
   else if(command == -103) Serial.println("ERRO: id do slave e ordens incorretas");
-  else if(command == -500) Serial.println("ERRO: saída inesperada");
+  else if(command == -104) Serial.println("ERRO: início de frase válido não encontrado... passou demasiado tempo a desde o inicio da transmissão");
+  else if(command == -105) Serial.println("STATUS: Sem mensagens para ler");
+  else if(command == -500 || command == -501) Serial.println("ERRO: saída inesperada");
   else if(command == 0){
     Serial.println("OFF");
     Serial.print("SENSOR: ");

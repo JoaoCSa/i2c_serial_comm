@@ -13,25 +13,26 @@
 /*
 Varáveis usadas no código i2c
 */
-int ready_check=0, i=0, j=0, waiting_1st=0, nsens=0, frase_valida=0, comm_result=0;
+int ready_check=0, i=0, b=0, j=0, waiting_1st=0, nsens=0, frase_valida=0, comm_result=0, state_atual=0, state_anterior=0;
 unsigned int val[9];
-char check_char, resposta[40], read_char, resposta_verif[40]; 
+char check_char ='(', resposta[40], read_char, resposta_verif[40]; 
 
 int initial_verification(){
-  while (check_char != '$' && Serial2.available()>0){
-    check_char = Serial2.read();
-    Serial.print("check_char: ");
-    Serial.println(check_char);
-  }
-
-  if (check_char == '$'){ 
-    check_char = '(';
-    return 1;
-  } else if (check_char != '$' && Serial2.available()==0) {
-    return 0;
-  } else {
-    return -1;
-  }
+  if (Serial2.available()>0){
+    while (check_char != '$' && Serial2.available()>0){
+      check_char = Serial2.read();
+      Serial.print("check_char: ");
+      Serial.println(check_char);
+    }
+    if (check_char == '$'){ 
+      check_char = '(';
+      return 1;
+    } else if (check_char != '$' && Serial2.available()==0) {
+      return 0;
+    } else {
+      return -1;
+    }
+  } else return 0;
 }  
 
 int decode_info(char * frase, unsigned int * val, int nsens, int frase_valida){ //Dá return ao número de sensores lidos
@@ -203,9 +204,16 @@ int read_serial_communication(char * resposta_ver, char * resposta, int * frase_
   }
 }
 
-int Send_serial_msg(){
-
-  return 0;
+int Send_serial_msg(int slave_id, int disp, int i){
+  char frase[10];
+  //Serial2.flush();
+  sprintf(frase, "#%02X%02X%02X$",  slave_id, disp, i);
+  if (Serial2){
+    Serial.println("Serial2 ready!");
+    Serial2.write(frase);
+    return disp; //Mudar para "i" no programa final
+  } 
+  return -500;
 }
 
 void Send_i2c_msg(int slave_id, int disp, int i){
@@ -226,43 +234,67 @@ void setup() {
 }
 
 void loop() {
-  if (ready_check == 1) {
-    Serial.println("VERIFICADO");
-    comm_result = read_serial_communication(resposta_verif ,resposta, &frase_valida, &nsens, &ready_check);
+
+  if (state_atual != state_anterior){
+    Serial.println();
+    Serial.println("ENTROU NO SEND MSG");
+
+    int f = Send_serial_msg(1, state_atual, OFF);
+    Serial.print("TESTES.Dispositivo:");
+    Serial.println(f);
+    state_anterior=state_atual;
   } else {
-    ready_check = initial_verification();
-    if (ready_check == 1){
-      Serial.print("Code: ");
-      Serial.println(ready_check);  
+    Serial.println();
+    Serial.println("ENTROU NO RECV MSG");
+    if (ready_check == 1) {
+      Serial.println("VERIFICADO");
+      comm_result = read_serial_communication(resposta_verif ,resposta, &frase_valida, &nsens, &ready_check);
     } else {
-      Serial.print("Error code: ");
-      Serial.println(ready_check);
+      ready_check = initial_verification();
+      if (ready_check == 1){
+        Serial.print("Code: ");
+        Serial.println(ready_check);  
+      } else {
+        Serial.print("Error code: ");
+        Serial.println(ready_check);
+      }
     }
+    if (comm_result==1){
+      Serial.println("FRASE VÁLIDA");
+      Serial.print("RESPOSTA VERIFICADA: ");
+      Serial.println(resposta_verif);
+    } else if (comm_result==0){
+      Serial.println("RESPOSTA INVÁLIDA");
+    } else if (comm_result==-1){
+      Serial.println("REVERIFICAÇÃO NECESSÁRIA");
+    } else if (comm_result==500){
+      Serial.println("ERRO DESCONHECIDO...");
+    }
+    
+    Serial.print("Resposta guardada: ");
+    Serial.println(resposta);
+    
+    Serial.print("Numero de bytes: ");
+    Serial.println(nsens);
+
+    int n = decode_info(resposta_verif, val, nsens, frase_valida);
+
+    Serial.print("NUMERO DE SENSORES: ");
+    Serial.println(n);
   }
-  if (comm_result==1){
-    Serial.println("FRASE VÁLIDA");
-    Serial.print("RESPOSTA VERIFICADA: ");
-    Serial.println(resposta_verif);
-  } else if (comm_result==0){
-    Serial.println("RESPOSTA INVÁLIDA");
-  } else if (comm_result==-1){
-    Serial.println("REVERIFICAÇÃO NECESSÁRIA");
-  } else if (comm_result==500){
-    Serial.println("ERRO DESCONHECIDO...");
+  if (state_atual==0 && b==10){
+    state_atual=1;
+    b=0;
+  } else if (state_atual==1 && b==10){
+    state_atual=0;
+    b=0;
+  } else if (b<10){
+    b++;
   }
   
-  Serial.print("Resposta guardada: ");
-  Serial.println(resposta);
   
-  Serial.print("Numero de bytes: ");
-  Serial.println(nsens);
-
-  int n = decode_info(resposta_verif, val, nsens, frase_valida);
-
-  Serial.print("NUMERO DE SENSORES: ");
-  Serial.println(n);
-
-  Send_i2c_msg(1, 5, OFF); //salve_id, pino do componente,mcommand [ON, OFF]
+  
+  //Send_i2c_msg(1, 5, OFF); //salve_id, pino do componente,mcommand [ON, OFF]
 
 delay(500);
 }
